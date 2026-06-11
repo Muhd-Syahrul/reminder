@@ -71,21 +71,42 @@ async function getMyTickets() {
   });
 }
 
-function buildMessage(tickets) {
-  if (!tickets.length) {
-    return '🎉 No open tickets assigned to you today. Enjoy!';
+// Day-of-week (0=Sun .. 6=Sat) in Malaysia time, regardless of where this
+// runs. GitHub runners are on UTC, so we ask explicitly for Asia/Kuala_Lumpur
+// rather than trusting the runner's clock.
+function malaysiaDay() {
+  const name = new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    timeZone: 'Asia/Kuala_Lumpur',
+  }).format(new Date());
+  return { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[name];
+}
+
+function buildMessage(tickets, isMonday) {
+  const parts = [];
+
+  // Monday extra: OPEX metric sheet reminder, sent alongside the tickets.
+  if (isMonday) {
+    parts.push('🗓️ *Monday reminder:* update your OPEX metric sheet.');
+    parts.push('');
   }
+
+  if (!tickets.length) {
+    parts.push('🎉 No open tickets assigned to you today. Enjoy!');
+    return parts.join('\n');
+  }
+
   const lines = tickets.map((t) => {
     const title = t.title || '(untitled)';
     const stage = t.stage && t.stage.name ? t.stage.name : 'unknown';
     const ref   = t.display_id ? `[${t.display_id}] ` : '';
     return `• ${ref}${title} — _${stage}_`;
   });
-  return [
-    '📋 *Your tickets for today*',
-    '',
-    ...lines,
-  ].join('\n');
+
+  parts.push('📋 *Your tickets for today*');
+  parts.push('');
+  parts.push(...lines);
+  return parts.join('\n');
 }
 
 async function postToSlack(text) {
@@ -104,16 +125,17 @@ async function postToSlack(text) {
 async function main() {
   requireEnv();
 
-  // Skip weekends.
-  const day = new Date().getDay();
+  // Skip weekends (in Malaysia time).
+  const day = malaysiaDay();
   if (day === 0 || day === 6) {
     console.log('Weekend — skipping.');
     return;
   }
+  const isMonday = day === 1;
 
   const tickets = await getMyTickets();
   console.log('Found ' + tickets.length + ' tickets.');
-  await postToSlack(buildMessage(tickets));
+  await postToSlack(buildMessage(tickets, isMonday));
   console.log('Posted to Slack.');
 }
 
