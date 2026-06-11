@@ -1,0 +1,24 @@
+name: Daily Task Reminder
+
+on:
+  schedule:
+    # GitHub cron is in UTC. Singapore is UTC+8, so 01:00 UTC = 09:00 SGT.
+    # Note: scheduled runs can be delayed several minutes by GitHub.
+    - cron: '0 1 * * 1-5'
+  workflow_dispatch:   # lets you run it manually from the Actions tab to test
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Send reminder
+        env:
+          DEVREV_TOKEN:      ${{ secrets.DEVREV_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: node reminder.js
