@@ -19,7 +19,7 @@ const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
 
 // Which ticket states to include. DevRev "works" states are usually:
 // "in_development" / "in_progress" / "open" etc. Adjust to your workspace.
-const INCLUDE_STAGES = ['open', 'in_development'];
+const INCLUDE_STAGES = ['open', 'in_progress', 'in_development'];
 
 function requireEnv() {
   const missing = ['DEVREV_TOKEN', 'SLACK_WEBHOOK_URL']
