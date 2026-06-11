@@ -2,9 +2,9 @@ name: Daily Task Reminder
 
 on:
   schedule:
-    # GitHub cron is in UTC. Singapore is UTC+8, so 01:00 UTC = 09:00 SGT.
+    # GitHub cron is in UTC. Malaysia is UTC+8, so 00:00 UTC = 08:00 MYT.
     # Note: scheduled runs can be delayed several minutes by GitHub.
-    - cron: '0 1 * * 1-5'
+    - cron: '0 0 * * 1-5'
   workflow_dispatch:   # lets you run it manually from the Actions tab to test
 
 jobs:
